@@ -1,18 +1,53 @@
-# PX4-ROS2 bridge
 
-[![GitHub license](https://img.shields.io/github/license/PX4/px4_ros_com.svg)](https://github.com/PX4/px4_ros_com/blob/master/LICENSE) [![GitHub (pre-)release](https://img.shields.io/github/release-pre/PX4/px4_ros_com.svg)](https://github.com/PX4/px4_ros_com/releases/tag/beta) [![DOI](https://zenodo.org/badge/142936318.svg)](https://zenodo.org/badge/latestdoi/142936318) [![Build and Test package](https://github.com/PX4/px4_ros_com/workflows/Build%20and%20Test%20package/badge.svg?branch=master)](https://github.com/PX4/px4_ros_com/actions)
+# PX4 ros2 API
 
-This package materializes the ROS2 side of PX4 DDS bridge, establishing a bridge between the PX4 autopilot stack through an XRCE-DDS bridge. It has a straight dependency on the [`px4_msgs`](https://github.com/PX4/px4_msgs) package.
+Developed by autmav
 
-## Install, build and usage
+## Prerequisites
 
-Check the [ROS2 Interface](https://dev.px4.io/en/middleware/micrortps.html) section on the PX4 Devguide for details on how to install the required dependencies, build the package (composed by the two branches) and use it.
+Tested with:
 
-## Bug tracking and feature requests
+- ubuntu 20.0, ros2 (foxy), Gazebo-classic, PX4 (v1.14)
 
-Use the [Issues](https://github.com/PX4/px4_ros_com/issues) section to create a new issue. Report your issue or feature request [here](https://github.com/PX4/px4_ros_com/issues/new).
+1. Installation of ros2
 
-## Questions and troubleshooting
+```
+... Installation of ros2
+```
 
-Reach the PX4 development team on the `#messaging` or `#ros` PX4 Slack channels:
-[![Slack](https://px4-slack.herokuapp.com/badge.svg)](http://slack.px4.io)
+
+2. Instalation Gazebo-classic
+
+```
+... Installation of gazebo classic
+```
+
+
+3. Installation of PX4-Autopilot
+
+```
+cd ~
+
+... Installation of PX4
+```
+
+## Install
+
+```
+... creating ros2 workspace
+
+... cloning px4_msgs in src/
+
+git clone https://github.com/autmav/px4_ros2_api.git px4_ros_com
+
+... cd to workspace
+
+colcon build
+```
+
+## Test
+
+```
+
+```
+

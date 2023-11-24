@@ -67,21 +67,23 @@ public:
 		auto timer_callback = [this]() -> void {
 
 			if (offboard_setpoint_counter_ == 10) {
-				// Change to Offboard mode after 10 setpoints
-				this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+				// takeoff mode
+				this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 4, 2);
 
 				// Arm the vehicle
 				this->arm();
 			}
 
+			if (offboard_setpoint_counter_ == 100) {
+				// offboard mode
+				this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+			}
+
 			// offboard_control_mode needs to be paired with trajectory_setpoint
 			publish_offboard_control_mode();
 			publish_trajectory_setpoint();
-
-			// stop the counter after reaching 11
-			if (offboard_setpoint_counter_ < 11) {
-				offboard_setpoint_counter_++;
-			}
+			
+			offboard_setpoint_counter_++;
 		};
 		timer_ = this->create_wall_timer(100ms, timer_callback);
 	}
@@ -102,7 +104,7 @@ private:
 
 	void publish_offboard_control_mode();
 	void publish_trajectory_setpoint();
-	void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0);
+	void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0, float param3 = 0.0);
 };
 
 /**
@@ -146,27 +148,18 @@ void OffboardControl::publish_offboard_control_mode()
  *        For this example, it sends a trajectory setpoint to make the
  *        vehicle hover at 5 meters with a yaw angle of 180 degrees.
  */
+
 void OffboardControl::publish_trajectory_setpoint()
 {
 	TrajectorySetpoint msg{};
 	msg.position = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-	msg.velocity = {0.0, 1, -1};
+	msg.velocity = {0.0, 2.0, 0};
 	msg.yaw = std::numeric_limits<float>::quiet_NaN();
 	// msg.yaw = 1.57; // [-PI:PI]
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	trajectory_setpoint_publisher_->publish(msg);
 }
 
-//void OffboardControl::publish_trajectory_setpoint()
-//{
-//	TrajectorySetpoint msg{};
-//	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-//	msg.position = {0.0, 0.0, -10.0};
-//	msg.yaw = 1.57;
-//	msg.velocity = {0.0, 0.0, -0.5};
-//	trajectory_setpoint_publisher_->publish(msg);
-//	//RCLCPP_INFO(this->get_logger(), "SetPoint Published");
-//}
 
 /**
  * @brief Publish vehicle commands
@@ -174,11 +167,12 @@ void OffboardControl::publish_trajectory_setpoint()
  * @param param1    Command parameter 1
  * @param param2    Command parameter 2
  */
-void OffboardControl::publish_vehicle_command(uint16_t command, float param1, float param2)
+void OffboardControl::publish_vehicle_command(uint16_t command, float param1, float param2, float param3)
 {
 	VehicleCommand msg{};
 	msg.param1 = param1;
 	msg.param2 = param2;
+	msg.param3 = param3;
 	msg.command = command;
 	msg.target_system = 1;
 	msg.target_component = 1;
