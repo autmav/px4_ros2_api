@@ -1,0 +1,7 @@
+launch:
+
+- node:
+    pkg: "px4_ros_com"
+    exec: "attitude_command"
+    name: "attitude_command"
+    output: "screen"

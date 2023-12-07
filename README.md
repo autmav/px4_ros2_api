@@ -48,6 +48,19 @@ colcon build
 ## Test
 
 ```
+# Navigate to the ws root
+source install/local_setup.bash
 
+# for taking off the drone enter the following command:
+ros2 launch px4_ros_com only_takeoff.yaml
+
+# for attitude command enter the following command:
+ros2 launch px4_ros_com attitude_command.yaml
+
+# for velocity command enter the following command:
+ros2 launch px4_ros_com velocity_command.yaml
+
+# for position command enter the following command:
+ros2 launch px4_ros_com position_command.yaml
 ```
 

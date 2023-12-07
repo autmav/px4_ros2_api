@@ -55,10 +55,26 @@ target_include_directories(frame_transforms PUBLIC
 #ament_target_dependencies(debug_vect_advertiser rclcpp px4_msgs)
 #install(TARGETS debug_vect_advertiser DESTINATION lib/${PROJECT_NAME})
 
-# examples/offboard/offboard_control
-add_executable(offboard_control src/examples/offboard/offboard_control.cpp)
-ament_target_dependencies(offboard_control rclcpp px4_msgs)
-install(TARGETS offboard_control DESTINATION lib/${PROJECT_NAME})
+
+# examples/only_takeoff/only_takeoff
+add_executable(only_takeoff src/examples/only_takeoff/only_takeoff.cpp)
+ament_target_dependencies(only_takeoff rclcpp px4_msgs)
+install(TARGETS only_takeoff DESTINATION lib/${PROJECT_NAME})
+
+# examples/offboard/attitude_command
+add_executable(attitude_command src/examples/offboard/attitude_command.cpp)
+ament_target_dependencies(attitude_command rclcpp px4_msgs)
+install(TARGETS attitude_command DESTINATION lib/${PROJECT_NAME})
+
+# examples/offboard/velocity_command
+add_executable(velocity_command src/examples/offboard/velocity_command.cpp)
+ament_target_dependencies(velocity_command rclcpp px4_msgs)
+install(TARGETS velocity_command DESTINATION lib/${PROJECT_NAME})
+
+# examples/offboard/position_command
+add_executable(position_command src/examples/offboard/position_command.cpp)
+ament_target_dependencies(position_command rclcpp px4_msgs)
+install(TARGETS position_command DESTINATION lib/${PROJECT_NAME})
 
 
 ############
@@ -70,8 +86,8 @@ ament_export_dependencies(ament_cmake rclcpp rosidl_default_runtime eigen3_cmake
 
 ament_export_targets(export_frame_transforms HAS_LIBRARY_TARGET)
 
-#ament_export_include_directories(include)
-#ament_export_libraries(frame_transforms)
+ament_export_include_directories(include)
+ament_export_libraries(frame_transforms)
 
 # Install header files
 install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION include/${PROJECT_NAME})
