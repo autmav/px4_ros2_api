@@ -22,13 +22,14 @@ public:
 		offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
 		trajectory_setpoint_publisher_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
 		vehicle_command_publisher_ = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
-
 		timer_ = this->create_wall_timer(100ms, std::bind(&OffboardControl::flight_mode_timer_callback, this));
 	}
 
 	void arm();
 	void disarm();
 
+	std::atomic<float> x, y, z, vx, vy, vz, yaw;
+	std::atomic<bool> offposition, offvelocity, offattitude, offbodyrate;
 	int state = 0;
 	int stateOld = 0;
 
@@ -41,31 +42,135 @@ private:
 	
 	std::atomic<uint64_t> timestamp_;   //!< common synced timestamped
 
-	uint64_t offboard_setpoint_counter_ = 0;   
+	uint64_t offboard_setpoint_counter_ = 0;
 
-	void publish_offboard_control_mode();
-	void publish_trajectory_setpoint();
+	void publish_offboard_control_mode(bool offposition = 0, bool offvelocity = 1, bool offattitude = 0, bool offbodyrate = 0);
+	void publish_trajectory_setpoint(float x = 0, float y = 0, float z = 0, float vx = 0, float vy = 0, float vz = 0, float yaw = 0);
 	void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0, float param3 = 0.0);
 	void flight_mode_timer_callback();
 };
 
 void OffboardControl::flight_mode_timer_callback()
 {
-	if(offboard_setpoint_counter_ == 10){
-		// auto takeoff mode
-		this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 4, 2);
-						
-		// Arm the vehicle
-		this->arm();
-	}
-		// offboard mode start with const velocity
-	if(offboard_setpoint_counter_ == 150)
-		this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+			//switching between states
+			switch(state)
+			{
+				case 0:
+					
+					if(offboard_setpoint_counter_ == 140)
+						state = 10;
+					break;
 
-	publish_offboard_control_mode();
-	publish_trajectory_setpoint();
+				case 10:
+					
+					if(offboard_setpoint_counter_ == 25)
+						state = 20;
+					break;
 
-	offboard_setpoint_counter_++;			
+				case 20:
+					if(offboard_setpoint_counter_ == 25)
+						state = 30;
+					break;
+
+				case 30:
+					if(offboard_setpoint_counter_ == 25)
+						state = 40;
+					break;
+
+				case 40:
+					if(offboard_setpoint_counter_ == 25)
+						state = 50;
+					break;
+
+				case 50:
+					
+					if(offboard_setpoint_counter_ == 25)
+						return;
+					break;	
+			}
+			
+			//states behaviour			
+			switch(state)
+			{
+				case 0:
+					
+					if(offboard_setpoint_counter_ == 1){
+						offposition = true;
+						offvelocity = false;
+						offattitude = false;
+						offbodyrate = false;
+						x = 0;
+						y = 0;
+						z = -3;
+						vx = std::numeric_limits<float>::quiet_NaN();
+						vy = std::numeric_limits<float>::quiet_NaN();
+						vz = std::numeric_limits<float>::quiet_NaN();
+						yaw = 3.14/2;
+					}
+					
+					if(offboard_setpoint_counter_ == 20){
+						this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+						this->arm();
+					}
+											
+					break;
+
+				case 10:
+					// offboard mode _ start with const velocity & then yaw (after 5 seconds)
+					if(offboard_setpoint_counter_ == 1){
+						offposition = false;
+						offvelocity = true;
+						x = std::numeric_limits<float>::quiet_NaN();
+						y = std::numeric_limits<float>::quiet_NaN();
+						z = std::numeric_limits<float>::quiet_NaN();
+						vx = 0;
+						vy = 2;
+						vz = 0;
+					}
+					break;
+								
+				case 20:
+					// offboard mode _ start with const velocity & then yaw (after 5 seconds)
+					if(offboard_setpoint_counter_ == 1){
+						vx = 2;
+						vy = 0;
+					}
+					break;
+
+				case 30:
+					// offboard mode _ start with const velocity & then yaw (after 5 seconds)
+					if(offboard_setpoint_counter_ == 1){
+						vx = 0;
+						vy = -2;
+					}
+					break;
+
+				case 40:
+					// offboard mode _ start with const velocity & then yaw (after 5 seconds)
+					if(offboard_setpoint_counter_ == 1){
+						vx = -2;
+						vy = 0;
+					}
+					break;	
+
+				case 50:
+					// offboard mode _ start with const velocity & then yaw (after 5 seconds)
+					if(offboard_setpoint_counter_ == 1)
+						vx = 0;
+					break;				
+			}
+
+			publish_offboard_control_mode(offposition, offvelocity, offattitude, offbodyrate);
+			publish_trajectory_setpoint(x, y, z, vx, vy, vz, yaw);
+		//	publish_vehicle_attitude_setpoint(roll, pitch, yaw);
+		//	std::cout << "offboard_setpoint_counter_ = " << offboard_setpoint_counter_ << std::endl;
+
+			if(state != stateOld)
+				{
+					offboard_setpoint_counter_ = 0;
+					stateOld = state;
+				}
+			offboard_setpoint_counter_++;			
 }
 
 void OffboardControl::arm()
@@ -74,28 +179,53 @@ void OffboardControl::arm()
 	RCLCPP_INFO(this->get_logger(), "Arm command send");
 }
 
-void OffboardControl::publish_offboard_control_mode()
+/**
+ * @brief Send a command to Disarm the vehicle
+ */
+void OffboardControl::disarm()
+{
+	publish_vehicle_command(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0);
+	RCLCPP_INFO(this->get_logger(), "Disarm command send");
+}
+
+/**
+ * @brief Publish the offboard control mode.
+ *        For this example, only position and altitude controls are active.
+ */
+void OffboardControl::publish_offboard_control_mode(bool offposition, bool offvelocity, bool offattitude, bool offbodyrate)
 {
 	OffboardControlMode msg{};
-	msg.position = false;
-	msg.velocity = true;
+	msg.position = offposition;
+	msg.velocity = offvelocity;
 	msg.acceleration = false;
-	msg.attitude = false;
-	msg.body_rate = false;
+	msg.attitude = offattitude;
+	msg.body_rate = offbodyrate;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	offboard_control_mode_publisher_->publish(msg);
 }
 
-void OffboardControl::publish_trajectory_setpoint()
+/**
+ * @brief Publish a trajectory setpoint
+ *        For this example, it sends a trajectory setpoint to make the
+ *        vehicle hover at 5 meters with a yaw angle of 180 degrees.
+ */
+
+void OffboardControl::publish_trajectory_setpoint(float x, float y, float z, float vx, float vy, float vz, float yaw)
 {
 	TrajectorySetpoint msg{};
-	msg.position = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()};
-	msg.velocity = {2, 0, 0};
-	msg.yaw = 3.14/2;
+	msg.position = {x, y, z};
+	msg.velocity = {vx, vy, vz};
+	msg.yaw = yaw;
 	msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
 	trajectory_setpoint_publisher_->publish(msg);
 }
 
+/**
+ * @brief Publish vehicle commands
+ * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
+ * @param param1    Command parameter 1
+ * @param param2    Command parameter 2
+ */
 void OffboardControl::publish_vehicle_command(uint16_t command, float param1, float param2, float param3)
 {
 	VehicleCommand msg{};
@@ -118,6 +248,7 @@ int main(int argc, char *argv[])
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 	rclcpp::init(argc, argv);
 	rclcpp::spin(std::make_shared<OffboardControl>());
+
 	rclcpp::shutdown();
 	return 0;
 }

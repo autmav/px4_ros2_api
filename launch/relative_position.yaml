@@ -1,0 +1,7 @@
+launch:
+
+- node:
+    pkg: "px4_ros_com"
+    exec: "relative_position"
+    name: "relative_position"
+    output: "screen"

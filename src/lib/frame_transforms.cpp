@@ -38,7 +38,7 @@
  * Adapted from MAVROS ftf_frame_conversions.cpp and ftf_quaternion_utils.cpp.
  */
 
-#include <px4_ros_com/frame_transforms.h>
+#include <../../include/px4_ros_com/frame_transforms.h>
 
 #include <assert.h>
 
