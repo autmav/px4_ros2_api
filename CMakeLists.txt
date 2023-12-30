@@ -25,7 +25,16 @@ find_package(px4_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(interfaces REQUIRED)
+# find_package(interfaces REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+set(msg_files
+  "msg/TargetFRD.msg"
+)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  ${msg_files}
+)
 
 #################
 # Setup targets #
@@ -80,13 +89,19 @@ install(TARGETS position_command DESTINATION lib/${PROJECT_NAME})
 
 # examples/listener/relative_position
 add_executable(relative_position src/examples/listener/relative_position.cpp)
-ament_target_dependencies(relative_position rclcpp px4_msgs interfaces)
+ament_target_dependencies(relative_position rclcpp px4_msgs)
 install(TARGETS relative_position DESTINATION lib/${PROJECT_NAME})
 
 # examples/controller/control
 add_executable(control src/examples/controller/control.cpp)
-ament_target_dependencies(control rclcpp px4_msgs interfaces)
+ament_target_dependencies(control rclcpp px4_msgs)
 install(TARGETS control DESTINATION lib/${PROJECT_NAME})
+
+rosidl_target_interfaces(relative_position
+  ${PROJECT_NAME} "rosidl_typesupport_cpp")
+  
+rosidl_target_interfaces(control
+  ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ############
 # Install ##
 ############

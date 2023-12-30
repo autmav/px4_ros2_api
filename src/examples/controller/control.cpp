@@ -7,7 +7,7 @@
 
 #include <px4_msgs/msg/vehicle_attitude.hpp>
 #include <px4_msgs/msg/vehicle_local_position.hpp>
-#include "interfaces/msg/target_frd.hpp"
+#include "px4_ros_com/msg/target_frd.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -26,8 +26,8 @@ public:
 		rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
 		auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 10), qos_profile);
 		
-		target_relative_frd_subscription_ = this->create_subscription<interfaces::msg::TargetFRD>("target", 10,
-		[&](const interfaces::msg::TargetFRD::UniquePtr msg){
+		target_relative_frd_subscription_ = this->create_subscription<px4_ros_com::msg::TargetFRD>("target", 10,
+		[&](const px4_ros_com::msg::TargetFRD::UniquePtr msg){
 			
 			xrb = msg->x;
 			yrb = msg->y;
@@ -90,7 +90,7 @@ private:
 	rclcpp::Publisher<VehicleAttitudeSetpoint>::SharedPtr vehicle_attitude_setpoint_publisher_;
 	rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
 	rclcpp::Publisher<VehicleCommand>::SharedPtr vehicle_command_publisher_;
-	rclcpp::Subscription<interfaces::msg::TargetFRD>::SharedPtr target_relative_frd_subscription_;
+	rclcpp::Subscription<px4_ros_com::msg::TargetFRD>::SharedPtr target_relative_frd_subscription_;
 	rclcpp::Subscription<VehicleAttitude>::SharedPtr vehicle_attitude_subscription_;
 	
 	std::atomic<uint64_t> timestamp_;   //!< common synced timestamped

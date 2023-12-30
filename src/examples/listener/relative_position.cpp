@@ -2,7 +2,8 @@
 #include <px4_msgs/msg/vehicle_local_position.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <stdint.h>
-#include "interfaces/msg/target_frd.hpp"
+
+//#include "interfaces/msg/target_frd.hpp"
 //#include <std_msgs/msg/float32_multi_array.hpp>
 
 //#include <eigen3/Eigen/Eigen>
@@ -11,6 +12,8 @@
 
 #include <chrono>
 #include <iostream>
+
+#include "px4_ros_com/msg/target_frd.hpp"
 
 //#include "../../../include/px4_ros_com/frame_transforms.h"
 
@@ -105,14 +108,14 @@ public:
 			std::cout << "z = " << z << "\n\n";
 		});
 		
-		target_relative_frd_publisher_ = this->create_publisher<interfaces::msg::TargetFRD>("target", 10);
+		target_relative_frd_publisher_ = this->create_publisher<px4_ros_com::msg::TargetFRD>("target", 10);
 		timer_ = this->create_wall_timer(50ms, std::bind(&RelativePosition::timer_callback, this));
 	}
 
 private:
 	void timer_callback()
     {
-      auto message = interfaces::msg::TargetFRD();
+      auto message = px4_ros_com::msg::TargetFRD();
       message.x = xrb;
       message.y = yrb;
       message.z = zrb;
@@ -124,7 +127,7 @@ private:
 
 	rclcpp::Subscription<VehicleAttitude>::SharedPtr vehicle_attitude_subscription_;
 	rclcpp::Subscription<VehicleLocalPosition>::SharedPtr vehicle_local_position_subscription_;
-	rclcpp::Publisher<interfaces::msg::TargetFRD>::SharedPtr target_relative_frd_publisher_;
+	rclcpp::Publisher<px4_ros_com::msg::TargetFRD>::SharedPtr target_relative_frd_publisher_;
 //	rclcpp::Publisher<std::array<float, 3>>::SharedPtr target_relative_frd_publisher_;
 
 	
