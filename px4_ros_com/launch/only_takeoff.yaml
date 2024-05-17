@@ -1,0 +1,7 @@
+launch:
+
+- node:
+    pkg: "px4_ros_com"
+    exec: "only_takeoff"
+    name: "only_takeoff"
+    output: "screen"

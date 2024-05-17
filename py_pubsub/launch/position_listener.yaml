@@ -1,0 +1,7 @@
+launch:
+
+- node:
+    pkg: "py_pubsub"
+    exec: "position_listener"
+    name: "position_listener"
+    output: "screen"

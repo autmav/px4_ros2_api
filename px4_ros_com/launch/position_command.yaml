@@ -1,0 +1,7 @@
+launch:
+
+- node:
+    pkg: "px4_ros_com"
+    exec: "position_command"
+    name: "position_command"
+    output: "screen"
